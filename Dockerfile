@@ -1,27 +1,17 @@
-# Etapa 1 — Build da aplicação
-FROM node:22 AS build-env
+FROM node:22
 WORKDIR /app
 
-# Copia apenas os arquivos de dependências primeiro
+# Copia arquivos de dependências
 COPY package.json package-lock.json ./
-RUN npm install --production
 
-# Copia o restante da aplicação
+# Instala somente dependências de produção
+RUN npm install
+
+# Copia o restante do projeto
 COPY . .
 
 # Gera o build
 RUN npm run build
 
-# Etapa 2 — Imagem final de produção
-FROM node:22
-WORKDIR /app
-
-# Copia apenas arquivos necessários
-COPY package.json package-lock.json ./
-RUN npm install --production
-
-# Copia o build já gerado
-COPY --from=build-env /app/build ./build
-
-# Comando de inicialização
+# Inicia a aplicação
 CMD ["npm", "run", "start"]
