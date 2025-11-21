@@ -13,7 +13,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ["favicon.ico", "robots.txt"],
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ["**/*"],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/'),
@@ -23,6 +23,7 @@ export default defineConfig({
             },
           },
         ],
+
       },
       manifest: {
         name: "Meu App",
