@@ -15,5 +15,6 @@ COPY . .
 RUN npm run build
 
 EXPOSE 3000
+
 # Inicia a aplicação
 CMD ["npm", "run", "start"]
