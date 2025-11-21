@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # Serviço principal do seu Front-end Vite PWA
+  vite-pwa-app:
+    # Usa o Dockerfile no diretório atual para construir a imagem
+    build: 
+      context: . 
+      dockerfile: Dockerfile
+    
+    container_name: vite-pwa-app-container
+    
+    # Reinicia automaticamente o contêiner em caso de falha
+    restart: always
+    
+    # Conecta o serviço à rede 'proxy' para comunicação com o Traefik
+    networks:
+      - proxy
+      
+    # Configurações do Traefik para o Front-end
+    labels:
+      # --- Habilita o Traefik para este serviço ---
+      - "traefik.enable=true"
+      
+      # Roteador (Router)
+      # A regra usa a variável de ambiente VITE_PWA_HOST, que você definirá no seu .env
+      - "traefik.http.routers.vitepwa.rule=Host(`${VITE_PWA_HOST}`)"
+      - "traefik.http.routers.vitepwa.entrypoints=websecure" # Usualmente o ponto de entrada HTTPS
+      - "traefik.http.routers.vitepwa.service=vitepwa-service"
+      
+      # Força o uso de HTTPS e solicita o certificado Let's Encrypt
+      - "traefik.http.routers.vitepwa.tls=true"
+      - "traefik.http.routers.vitepwa.tls.certresolver=letsencrypt"
+
+      # Load Balancer Service
+      # CORREÇÃO: A porta interna do Nginx/Contêiner é a 80
+      - "traefik.http.services.vitepwa-service.loadbalancer.server.port=80"
+
+
+# Definição das Redes
+networks:
+  proxy:
+    # Indica que esta rede já deve existir (criada pelo Traefik)
+    external: true
