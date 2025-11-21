@@ -10,7 +10,7 @@ export default defineConfig({
     reactRouter(), 
     tsconfigPaths(),
     VitePWA({ 
-      injectRegister: 'auto',
+      injectRegister: 'inline',
       registerType: 'autoUpdate',
       includeAssets: ["favicon.ico", "robots.txt"],
       workbox: {
