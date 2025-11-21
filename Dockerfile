@@ -1,22 +1,27 @@
-FROM node:22 AS development-dependencies-env
-COPY . /app
+# Etapa 1 — Instala dependências de produção e build
+FROM node:22 AS build-env
 WORKDIR /app
-RUN npm ci
 
-FROM node:22 AS production-dependencies-env
-COPY ./package.json package-lock.json /app/
-WORKDIR /app
+# Copia apenas arquivos essenciais primeiro (cache mais eficiente)
+COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-FROM node:22 AS build-env
-COPY . /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
+# Copia o resto do projeto
+COPY . .
+
+# Gera o build da aplicação
 RUN npm run build
 
+# Etapa 2 — Imagem final de produção
 FROM node:22
-COPY ./package.json package-lock.json /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
 WORKDIR /app
+
+# Copia apenas dependências de produção
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# Copia build gerado
+COPY --from=build-env /app/build ./build
+
+# Comando de inicialização em produção
 CMD ["npm", "run", "start"]
