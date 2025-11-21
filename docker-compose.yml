@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Serviço principal do seu Front-end Vite PWA
+  # Serviço que irá servir o seu PWA compilado via Nginx
   vite-pwa-app:
     # Usa o Dockerfile no diretório atual para construir a imagem
     build: 
@@ -17,28 +17,27 @@ services:
     networks:
       - proxy
       
-    # Configurações do Traefik para o Front-end
+    # Configurações do Traefik
     labels:
-      # --- Habilita o Traefik para este serviço ---
+      # Habilita o Traefik para este serviço
       - "traefik.enable=true"
       
-      # Roteador (Router)
-      # A regra usa a variável de ambiente VITE_PWA_HOST, que você definirá no seu .env
+      # Roteador (Router): Regra de Host e Entrypoint HTTPS
       - "traefik.http.routers.vitepwa.rule=Host(`${VITE_PWA_HOST}`)"
-      - "traefik.http.routers.vitepwa.entrypoints=websecure" # Usualmente o ponto de entrada HTTPS
+      - "traefik.http.routers.vitepwa.entrypoints=websecure" # Ponto de entrada HTTPS do seu Traefik
       - "traefik.http.routers.vitepwa.service=vitepwa-service"
       
-      # Força o uso de HTTPS e solicita o certificado Let's Encrypt
+      # TLS/SSL: Força HTTPS e solicita o certificado Let's Encrypt
       - "traefik.http.routers.vitepwa.tls=true"
       - "traefik.http.routers.vitepwa.tls.certresolver=letsencrypt"
 
-      # Load Balancer Service
-      # CORREÇÃO: A porta interna do Nginx/Contêiner é a 80
+      # Load Balancer Service: Aponta para a porta interna do Nginx (80)
+      # Essa porta é a que o Nginx está escutando DENTRO do contêiner
       - "traefik.http.services.vitepwa-service.loadbalancer.server.port=80"
 
 
 # Definição das Redes
 networks:
   proxy:
-    # Indica que esta rede já deve existir (criada pelo Traefik)
+    # Indica que esta rede deve ser a rede externa onde o Traefik está
     external: true
