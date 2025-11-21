@@ -9,6 +9,16 @@ export default defineConfig({
     tailwindcss(), 
     reactRouter(), 
     tsconfigPaths(),
-    VitePWA({ registerType: 'autoUpdate' })
+    VitePWA({ 
+      registerType: 'autoUpdate',
+      includeAssets: ["favicon.ico", "robots.txt"],
+      manifest: {
+        name: "Meu App",
+        short_name: "App",
+        start_url: "/",
+        display: "standalone",
+        theme_color: "#ffffff",
+      },
+     })
   ],
 });
