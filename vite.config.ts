@@ -12,6 +12,9 @@ export default defineConfig({
     VitePWA({ 
       registerType: 'autoUpdate',
       includeAssets: ["favicon.ico", "robots.txt"],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+      },
       manifest: {
         name: "Meu App",
         short_name: "App",
