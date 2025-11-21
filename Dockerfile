@@ -1,37 +1,22 @@
-# ====================================================================
-# ESTÁGIO 1: BUILD - Compila a aplicação usando todas as dependências
-# ====================================================================
-FROM node:20-alpine AS builder
-
-# Define o diretório de trabalho
+FROM node:20-alpine AS development-dependencies-env
+COPY . /app
 WORKDIR /app
-
-# Copia arquivos de dependência
-# Isso garante que a camada de cache do Docker só seja invalidada se as dependências mudarem
-COPY package.json package-lock.json ./
-
-# Instala TODAS as dependências (dev e prod) para que o build funcione
-# Usamos 'npm install' ou 'npm ci' aqui, sem --omit=dev
 RUN npm ci
 
-# Copia o restante do código
-COPY . .
+FROM node:20-alpine AS production-dependencies-env
+COPY ./package.json package-lock.json /app/
+WORKDIR /app
+RUN npm ci --omit=dev
 
-# Executa o build de produção. O output será na pasta 'build/client' (conforme seu log)
+FROM node:20-alpine AS build-env
+COPY . /app/
+COPY --from=development-dependencies-env /app/node_modules /app/node_modules
+WORKDIR /app
 RUN npm run build
 
-# ====================================================================
-# ESTÁGIO 2: PRODUÇÃO (RUNTIME) - Usa Nginx para servir os arquivos estáticos
-# ====================================================================
-FROM nginx:alpine AS production
-
-# Remove o conteúdo padrão do Nginx
-RUN rm -rf /usr/share/nginx/html/*
-
-# Copia a pasta compilada (build/client) do estágio 'builder' para o diretório de serviço do Nginx
-# Verifique se o seu build local realmente gera para 'build/client' ou se é 'dist'
-COPY --from=builder /app/build/client /usr/share/nginx/html
-
-# O Nginx serve os arquivos na porta 80 por padrão
-# O Traefik usará esta porta
-CMD ["nginx", "-g", "daemon off;"]
+FROM node:20-alpine
+COPY ./package.json package-lock.json /app/
+COPY --from=production-dependencies-env /app/node_modules /app/node_modules
+COPY --from=build-env /app/build /app/build
+WORKDIR /app
+CMD ["npm", "run", "start"]
