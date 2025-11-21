@@ -10,7 +10,7 @@ services:
     
     # Porta interna que seu app expõe (ajuste se necessário)
     expose:
-      - "80"
+      - "3000"
 
     environment:
       - VITE_PWA_HOST=${VITE_PWA_HOST}
