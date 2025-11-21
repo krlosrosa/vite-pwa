@@ -14,6 +14,15 @@ export default defineConfig({
       includeAssets: ["favicon.ico", "robots.txt"],
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'static-cache',
+            },
+          },
+        ],
       },
       manifest: {
         name: "Meu App",
